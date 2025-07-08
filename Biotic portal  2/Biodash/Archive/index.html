@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>BioDash+</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+    }
+
+    .header-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+    }
+
+    .logo-container img {
+      max-width: 150px;
+      height: auto;
+    }
+
+    .title {
+      font-size: 22px;
+      margin-left: 10px;
+    }
+
+    .dashboard-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      width: 80%;
+      margin: 20px auto;
+      min-height: 500px; 
+      border: 2px solid #ccc;
+      border-radius: 6px;
+      background: #fff;
+      padding: 20px;
+    }
+
+    .app-box {
+      width: 200px;
+      height: 240px;
+      margin: 20px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      background: #fafafa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s ease;
+    }
+
+    .app-box:hover {
+      transform: scale(1.05);
+    }
+
+    .app-box button {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+    }
+
+    .app-box button:focus {
+      outline: 2px solid #999;
+    }
+
+    .app-box button img {
+      max-width: 90%;
+      max-height: 90%;
+    }
+  </style>
+</head>
+<body>
+  <div class="header-container">
+    <div class="logo-container">
+      <img src="biodash plus logo.png" alt="BioDash+ Logo">
+      <span class="title">BioDash+</span>
+    </div>
+    <div class="logo-container">
+      <img src="biotic logo.png" alt="Biotic Logo">
+    </div>
+  </div>
+  
+  <div class="dashboard-container">
+    
+    <div class="app-box">
+      <button type="button" onclick="openApp('solvetrix/solvetrix.html')">
+        <img src="solvetrix/logo.svg" alt="Solvetrix Logo">
+      </button>
+    </div>
+    
+    <div class="app-box">
+      <button type="button" onclick="openApp('bionutrix/bionutrix.html')">
+        <img src="bionutrix/logo.svg" alt="Bionutrix Logo">
+      </button>
+    </div>
+
+  </div>
+
+  <script>
+    function openApp(url) {
+      window.open(url, '_blank');
+    }
+  </script>
+</body>
+</html>
