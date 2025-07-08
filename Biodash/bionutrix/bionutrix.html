@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>C:N:P Nutrient Calculator (Cross-Nutrient + Dropdowns)</title>
+  <style>
+    /* Basic styling */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #ccc;
+    }
+    header img {
+      height: 60px;
+    }
+    fieldset {
+      margin-bottom: 15px;
+      padding: 10px;
+    }
+    input, select, button {
+      padding: 5px;
+      margin: 5px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    table, th, td {
+      border: 1px solid #aaa;
+    }
+    th, td {
+      padding: 8px;
+      text-align: center;
+    }
+    h1, h2, h3 {
+      color: #333;
+    }
+    /* Style for the export button and filename input */
+    #exportContainer {
+      margin-top: 20px;
+    }
+    #exportFilename {
+      padding: 5px;
+      margin-right: 10px;
+    }
+    #exportButton {
+      padding: 10px 20px;
+      font-size: 1em;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header with two logos on opposite sides -->
+  <header>
+    <img src="logo-left.svg" alt="Left Logo">
+    <img src="logo-right.svg" alt="Right Logo">
+  </header>
+  
+  <h1>C:N:P Nutrient Calculator (Cross-Nutrient)</h1>
+  
+  <!-- Input for known nutrient concentration -->
+  <fieldset>
+    <legend>Input Nutrient Concentration (mM) – Only one is required</legend>
+    <label for="concC">Carbon (C):</label>
+    <input type="number" id="concC" step="any" placeholder="e.g., 100">
+    <br>
+    <label for="concN">Nitrogen (N):</label>
+    <input type="number" id="concN" step="any" placeholder="e.g., 10">
+    <br>
+    <label for="concP">Phosphorus (P):</label>
+    <input type="number" id="concP" step="any" placeholder="e.g., 10">
+  </fieldset>
+  
+  <!-- Desired nutrient ratios -->
+  <fieldset>
+    <legend>Desired Nutrient Ratios (C:N:P)</legend>
+    <label for="ratioC">Carbon Ratio:</label>
+    <input type="number" id="ratioC" step="any" value="12">
+    <br>
+    <label for="ratioN">Nitrogen Ratio:</label>
+    <input type="number" id="ratioN" step="any" value="1">
+    <br>
+    <label for="ratioP">Phosphorus Ratio:</label>
+    <input type="number" id="ratioP" step="any" value="1">
+  </fieldset>
+  
+  <!-- Compound Info -->
+  <fieldset>
+    <legend>Compound Information (each can supply multiple nutrients)</legend>
+    
+    <!-- Carbon Compound -->
+    <h3>Carbon Compound</h3>
+    <label>Select a preset:</label>
+    <select id="compoundCSelect">
+      <option value="custom">Custom</option>
+      <option value="Glucose">Glucose (C6H12O6)</option>
+      <option value="Sucrose">Sucrose (C12H22O11)</option>
+    </select>
+    <br>
+    <label for="compoundCName">Name:</label>
+    <input type="text" id="compoundCName" placeholder="e.g., Glucose">
+    <br>
+    <label for="compoundCFormula">Formula:</label>
+    <input type="text" id="compoundCFormula" placeholder="e.g., C6H12O6">
+    <br>
+    <label for="stockTypeC">Stock Type:</label>
+    <select id="stockTypeC">
+      <option value="none">None</option>
+      <option value="solid">Solid</option>
+      <option value="liquid">Liquid</option>
+    </select>
+    <label for="stockConcC">Stock Concentration (g/mL if liquid):</label>
+    <input type="number" id="stockConcC" step="any" placeholder="e.g., 0.5">
+    
+    <hr>
+    
+    <!-- Nitrogen Compound -->
+    <h3>Nitrogen Compound</h3>
+    <label>Select a preset:</label>
+    <select id="compoundNSelect">
+      <option value="custom">Custom</option>
+      <option value="KNO3">Potassium Nitrate (KNO3)</option>
+    </select>
+    <br>
+    <label for="compoundNName">Name:</label>
+    <input type="text" id="compoundNName" placeholder="e.g., Ammonium Nitrate">
+    <br>
+    <label for="compoundNFormula">Formula:</label>
+    <input type="text" id="compoundNFormula" placeholder="e.g., NH4NO3">
+    <br>
+    <label for="stockTypeN">Stock Type:</label>
+    <select id="stockTypeN">
+      <option value="none">None</option>
+      <option value="solid">Solid</option>
+      <option value="liquid">Liquid</option>
+    </select>
+    <label for="stockConcN">Stock Concentration (g/mL if liquid):</label>
+    <input type="number" id="stockConcN" step="any" placeholder="e.g., 0.5">
+    
+    <hr>
+    
+    <!-- Phosphorus Compound -->
+    <h3>Phosphorus Compound</h3>
+    <label>Select a preset:</label>
+    <select id="compoundPSelect">
+      <option value="custom">Custom</option>
+      <option value="MAP">Mono Ammonium Phosphate (NH4H2PO4)</option>
+    </select>
+    <br>
+    <label for="compoundPName">Name:</label>
+    <input type="text" id="compoundPName" placeholder="e.g., Monopotassium Phosphate">
+    <br>
+    <label for="compoundPFormula">Formula:</label>
+    <input type="text" id="compoundPFormula" placeholder="e.g., K2HPO4">
+    <br>
+    <label for="stockTypeP">Stock Type:</label>
+    <select id="stockTypeP">
+      <option value="none">None</option>
+      <option value="solid">Solid</option>
+      <option value="liquid">Liquid</option>
+    </select>
+    <label for="stockConcP">Stock Concentration (g/mL if liquid):</label>
+    <input type="number" id="stockConcP" step="any" placeholder="e.g., 0.5">
+  </fieldset>
+  
+  <!-- Volume -->
+  <fieldset>
+    <legend>Media Volume</legend>
+    <label for="volume">Volume (L) (default is 1 L):</label>
+    <input type="number" id="volume" step="any" value="1">
+  </fieldset>
+  
+  <br>
+  <button type="button" id="calcButton">Calculate</button>
+  
+  <!-- Export to Excel Section -->
+  <div id="exportContainer">
+    <label for="exportFilename">File Name (optional):</label>
+    <input type="text" id="exportFilename" placeholder="Enter file name (without extension)">
+    <button type="button" id="exportButton">Export to Excel</button>
+  </div>
+  
+  <div id="results"></div>
+  
+  <script>
+    console.log("Script with cross-nutrient logic + dropdowns loaded.");
+    
+    // Atomic weights (g/mol)
+    const atomicWeights = {
+      H: 1.008,
+      C: 12.011,
+      N: 14.007,
+      O: 15.999,
+      P: 30.974,
+      K: 39.0983,
+      Na: 22.9897,
+      Cl: 35.45,
+      S: 32.065,
+      Mg: 24.305,
+      Ca: 40.078,
+      Fe: 55.845
+    };
+    
+    // Handle compound dropdown for CARBON
+    document.getElementById("compoundCSelect").addEventListener("change", () => {
+      const val = document.getElementById("compoundCSelect").value;
+      if (val === "Glucose") {
+        document.getElementById("compoundCName").value = "Glucose";
+        document.getElementById("compoundCFormula").value = "C6H12O6";
+      } else if (val === "Sucrose") {
+        document.getElementById("compoundCName").value = "Sucrose";
+        document.getElementById("compoundCFormula").value = "C12H22O11";
+      } else {
+        // custom
+        document.getElementById("compoundCName").value = "";
+        document.getElementById("compoundCFormula").value = "";
+      }
+    });
+    // Handle compound dropdown for NITROGEN
+    document.getElementById("compoundNSelect").addEventListener("change", () => {
+      const val = document.getElementById("compoundNSelect").value;
+      if (val === "KNO3") {
+        document.getElementById("compoundNName").value = "Potassium Nitrate";
+        document.getElementById("compoundNFormula").value = "KNO3";
+      } else {
+        document.getElementById("compoundNName").value = "";
+        document.getElementById("compoundNFormula").value = "";
+      }
+    });
+    // Handle compound dropdown for PHOSPHORUS
+    document.getElementById("compoundPSelect").addEventListener("change", () => {
+      const val = document.getElementById("compoundPSelect").value;
+      if (val === "MAP") {
+        document.getElementById("compoundPName").value = "Mono Ammonium Phosphate";
+        document.getElementById("compoundPFormula").value = "NH4H2PO4";
+      } else {
+        document.getElementById("compoundPName").value = "";
+        document.getElementById("compoundPFormula").value = "";
+      }
+    });
+    
+    // Parse formula into an element-count object
+    function parseFormula(formula) {
+      const regex = /([A-Z][a-z]*)(\d*(?:\.\d+)?)/g;
+      let match;
+      const comp = {};
+      while ((match = regex.exec(formula)) !== null) {
+        const element = match[1];
+        const count = match[2] === "" ? 1 : parseFloat(match[2]);
+        comp[element] = (comp[element] || 0) + count;
+      }
+      return comp;
+    }
+    
+    // Calculate molecular weight
+    function calculateMolecularWeight(formula) {
+      const comp = parseFormula(formula);
+      let total = 0;
+      for (const el in comp) {
+        if (!atomicWeights[el]) {
+          alert("Atomic weight for element '" + el + "' not found.");
+          return null;
+        }
+        total += atomicWeights[el] * comp[el];
+      }
+      return total;
+    }
+    
+    // Solve 3x3 system A*x = b by Cramer's rule
+    function solve3x3(A, b) {
+      const detA = determinant3(A);
+      if (Math.abs(detA) < 1e-12) return null;
+      let x = [0,0,0];
+      for (let i = 0; i < 3; i++) {
+        const Ai = cloneMatrix(A);
+        Ai[0][i] = b[0];
+        Ai[1][i] = b[1];
+        Ai[2][i] = b[2];
+        const detAi = determinant3(Ai);
+        x[i] = detAi / detA;
+      }
+      return x;
+    }
+    function determinant3(m) {
+      return m[0][0]*(m[1][1]*m[2][2]-m[1][2]*m[2][1])
+           - m[0][1]*(m[1][0]*m[2][2]-m[1][2]*m[2][0])
+           + m[0][2]*(m[1][0]*m[2][1]-m[1][1]*m[2][0]);
+    }
+    function cloneMatrix(m) {
+      return m.map(row => [...row]);
+    }
+    
+    function calculate() {
+      console.log("Calculate (cross-nutrient) function invoked.");
+      
+      const volume = parseFloat(document.getElementById("volume").value) || 1;
+      
+      // Which nutrient is known?
+      const cVal = parseFloat(document.getElementById("concC").value) || 0;
+      const nVal = parseFloat(document.getElementById("concN").value) || 0;
+      const pVal = parseFloat(document.getElementById("concP").value) || 0;
+      
+      let knownNutrient = "";
+      let knownConc = 0;
+      let countKnown = 0;
+      if (cVal > 0) { knownNutrient = "C"; knownConc = cVal; countKnown++; }
+      if (nVal > 0) { knownNutrient = "N"; knownConc = nVal; countKnown++; }
+      if (pVal > 0) { knownNutrient = "P"; knownConc = pVal; countKnown++; }
+      
+      if (countKnown === 0) {
+        alert("Please enter a concentration (mM) for exactly ONE of C, N, or P.");
+        return;
+      }
+      if (countKnown > 1) {
+        alert("You have more than one nutrient concentration provided. Only ONE is allowed.");
+        return;
+      }
+      
+      // Ratios
+      const ratioC = parseFloat(document.getElementById("ratioC").value) || 0;
+      const ratioN = parseFloat(document.getElementById("ratioN").value) || 0;
+      const ratioP = parseFloat(document.getElementById("ratioP").value) || 0;
+      if (ratioC <= 0 || ratioN <= 0 || ratioP <= 0) {
+        alert("Ratios must be > 0.");
+        return;
+      }
+      
+      // Compute desiredC, desiredN, desiredP (in mM)
+      let desiredC, desiredN, desiredP;
+      if (knownNutrient === "C") {
+        desiredC = knownConc;
+        desiredN = knownConc * (ratioN / ratioC);
+        desiredP = knownConc * (ratioP / ratioC);
+      } else if (knownNutrient === "N") {
+        desiredN = knownConc;
+        desiredC = knownConc * (ratioC / ratioN);
+        desiredP = knownConc * (ratioP / ratioN);
+      } else { // "P"
+        desiredP = knownConc;
+        desiredC = knownConc * (ratioC / ratioP);
+        desiredN = knownConc * (ratioN / ratioP);
+      }
+      
+      // Gather compound names, formulas, stock data
+      const compNames = [
+        document.getElementById("compoundCName").value.trim(),
+        document.getElementById("compoundNName").value.trim(),
+        document.getElementById("compoundPName").value.trim()
+      ];
+      const compFormulas = [
+        document.getElementById("compoundCFormula").value.trim(),
+        document.getElementById("compoundNFormula").value.trim(),
+        document.getElementById("compoundPFormula").value.trim()
+      ];
+      const stockTypes = [
+        document.getElementById("stockTypeC").value,
+        document.getElementById("stockTypeN").value,
+        document.getElementById("stockTypeP").value
+      ];
+      const stockConcs = [
+        parseFloat(document.getElementById("stockConcC").value) || 0,
+        parseFloat(document.getElementById("stockConcN").value) || 0,
+        parseFloat(document.getElementById("stockConcP").value) || 0
+      ];
+      
+      // parse formulas -> how many atoms of C, N, P each compound has
+      const compAtoms = [];
+      for (let i = 0; i < 3; i++) {
+        if (compNames[i] === "" || compFormulas[i] === "") {
+          alert("Please fill in compound name and formula for " + 
+                (i===0 ? "Carbon" : i===1 ? "Nitrogen" : "Phosphorus") + " Compound.");
+          return;
+        }
+        const parsed = parseFormula(compFormulas[i]);
+        compAtoms.push({
+          C: parsed.C || 0,
+          N: parsed.N || 0,
+          P: parsed.P || 0
+        });
+      }
+      
+      // Build 3x3 system A*x = b
+      // A = [ [C1, C2, C3], [N1, N2, N3], [P1, P2, P3] ]
+      // b = [desiredC, desiredN, desiredP]
+      const A = [
+        [ compAtoms[0].C, compAtoms[1].C, compAtoms[2].C ],
+        [ compAtoms[0].N, compAtoms[1].N, compAtoms[2].N ],
+        [ compAtoms[0].P, compAtoms[1].P, compAtoms[2].P ]
+      ];
+      const bVec = [ desiredC, desiredN, desiredP ];
+      
+      // Solve
+      const x = solve3x3(A, bVec);
+      if (!x) {
+        alert("System is unsolvable (matrix is singular). Check your compounds.");
+        return;
+      }
+      
+      // check for negative solutions
+      for (let i = 0; i < 3; i++) {
+        if (x[i] < -1e-8) {
+          alert("Solution yields negative usage for " + compNames[i] + " compound.");
+          return;
+        }
+      }
+      
+      // convert solution from mM to g, etc.
+      const results = [];
+      for (let i = 0; i < 3; i++) {
+        const mmNeeded = x[i]; // how many mM per liter
+        const molPerL = mmNeeded / 1000.0;
+        const mw = calculateMolecularWeight(compFormulas[i]);
+        if (mw === null) return; // error
+        const gPerL = molPerL * mw;
+        const totalGrams = gPerL * volume;
+        
+        let requiredStr = "";
+        if (stockTypes[i] === "liquid" && stockConcs[i] > 0) {
+          const volumeML = totalGrams / stockConcs[i];
+          requiredStr = volumeML.toFixed(1) + " ml";
+        } else {
+          requiredStr = totalGrams.toFixed(1) + " g";
+        }
+        
+        results.push({
+          nutrientSlot: (i===0?"Carbon":i===1?"Nitrogen":"Phosphorus"),
+          name: compNames[i],
+          formula: compFormulas[i],
+          mmNeeded: mmNeeded,
+          gPerL: gPerL,
+          requiredStr: requiredStr
+        });
+      }
+      
+      // Build results table
+      let html = "<h2>Results</h2><table><thead><tr>";
+      html += "<th>Compound</th><th>Compound Name</th><th>Formula</th>";
+      html += "<th>Compound Molarity (mM)</th><th>g/L</th><th>Total Required</th>";
+      html += "</tr></thead><tbody>";
+      
+      results.forEach(r => {
+        html += "<tr>";
+        html += `<td>${r.nutrientSlot}</td>`;
+        html += `<td>${r.name}</td>`;
+        html += `<td>${r.formula}</td>`;
+        html += `<td>${r.mmNeeded.toFixed(1)}</td>`; 
+        html += `<td>${r.gPerL.toFixed(1)}</td>`;
+        html += `<td>${r.requiredStr}</td>`;
+        html += "</tr>";
+      });
+      
+      html += "</tbody></table>";
+      document.getElementById("results").innerHTML = html;
+      console.log("Cross-nutrient + dropdown results updated.");
+    }
+    
+    // Attach to calc button
+    document.getElementById("calcButton").addEventListener("click", calculate);
+    
+    // Export to Excel
+    function exportToExcel() {
+      let fileName = document.getElementById("exportFilename").value.trim();
+      if (!fileName) {
+        const now = new Date();
+        fileName = "export_" + now.toISOString().slice(0,19).replace(/[:T]/g,"_");
+      }
+      if (!fileName.toLowerCase().endsWith(".xls")) {
+        fileName += ".xls";
+      }
+      const htmlContent = document.documentElement.outerHTML;
+      const blob = new Blob([htmlContent], { type: "application/vnd.ms-excel" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = fileName;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    }
+    document.getElementById("exportButton").addEventListener("click", exportToExcel);
+  </script>
+</body>
+</html>

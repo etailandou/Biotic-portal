@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>BioYielder</title>
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 30px;
+      position: relative;
+    }
+
+    h2 {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin: 10px 0 4px;
+    }
+
+    input {
+      padding: 5px;
+      width: 220px;
+    }
+
+    .result {
+      margin-top: 25px;
+      background: #fff;
+      padding: 15px;
+      border: 1px solid #ccc;
+      width: fit-content;
+    }
+
+    .result p {
+      margin: 6px 0;
+    }
+
+    .meta {
+      background: #ffffff;
+      border: 1px solid #bbb;
+      padding: 15px;
+      margin-bottom: 25px;
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 6px 12px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .logo {
+      position: absolute;
+      top: 20px;
+      left: 30px;
+      height: 100px; /* Enlarged logo */
+      z-index: 1;
+    }
+
+    .logo-spacing {
+      height: 90px; /* Ensures no overlap with content */
+    }
+  </style>
+</head>
+<body>
+
+  <img src="Bioyielder.png" alt="BioYielder Logo" class="logo" />
+  <div class="logo-spacing"></div> <!-- Spacer to push content below logo -->
+
+  <h2> </h2>
+
+  <button onclick="document.getElementById('fileInput').click()">Read from Excel</button>
+  <input type="file" id="fileInput" accept=".xlsx" style="display:none" />
+
+  <div class="meta">
+    <label>Sample name: <input type="text" id="sampleName"></label>
+    <label>Fermentation vessel: <input type="text" id="fermentationVessel"></label>
+    <label>Harvest date: <input type="text" id="harvestDate"></label>
+    <label>Extraction date: <input type="text" id="extractionDate"></label>
+  </div>
+
+  <label>Fermentation volume (L): <input type="number" id="fermentationVolume" oninput="calculate()" step="any"></label>
+  <label>Harvest volume (L) [optional]: <input type="number" id="harvestVolume" oninput="calculate()" step="any"></label>
+  <label>OD at harvest: <input type="number" id="odHarvest" oninput="calculate()" step="any"></label>
+  <label>Wet paste weight (g): <input type="number" id="wetPasteWeight" oninput="calculate()" step="any"></label>
+  <label>Dry paste weight (g): <input type="number" id="dryPasteWeight" oninput="calculate()" step="any"></label>
+  <label>Extracted paste weight (g): <input type="number" id="extractedPasteWeight" oninput="calculate()" step="any"></label>
+  <label>Final polymer weight (g): <input type="number" id="finalPolymerWeight" oninput="calculate()" step="any"></label>
+
+  <div class="result">
+    <p><strong>Dry polymer per culture volume:</strong> <span id="dryPerL">–</span></p>
+    <p><strong>Normalized dry polymer per OD:</strong> <span id="dryPerLOD">–</span></p>
+    <p><strong>Yield from extracted paste:</strong> <span id="yield">–</span></p>
+  </div>
+
+  <button onclick="exportToExcel()">Export data to Excel</button>
+
+  <script>
+    function calculate() {
+      const fermentationVolume = parseFloat(document.getElementById("fermentationVolume").value);
+      const harvestVolumeInput = parseFloat(document.getElementById("harvestVolume").value);
+      const od = parseFloat(document.getElementById("odHarvest").value);
+      const extractedPaste = parseFloat(document.getElementById("extractedPasteWeight").value);
+      const polymer = parseFloat(document.getElementById("finalPolymerWeight").value);
+
+      const dryPerL_el = document.getElementById("dryPerL");
+      const dryPerLOD_el = document.getElementById("dryPerLOD");
+      const yield_el = document.getElementById("yield");
+
+      const volume = !isNaN(harvestVolumeInput) && harvestVolumeInput > 0 ? harvestVolumeInput : fermentationVolume;
+
+      if (polymer > 0 && volume > 0 && od > 0 && extractedPaste > 0) {
+        const dryPerL = polymer / volume;
+        const dryPerLOD = dryPerL / od;
+        const yieldPercent = (polymer / extractedPaste) * 100;
+
+        dryPerL_el.textContent = dryPerL.toFixed(2) + " g L⁻¹";
+        dryPerLOD_el.textContent = dryPerLOD.toFixed(4) + " g L⁻¹ OD₆₀₀⁻¹";
+        yield_el.textContent = yieldPercent.toFixed(1) + " %";
+      } else {
+        dryPerL_el.textContent = "–";
+        dryPerLOD_el.textContent = "–";
+        yield_el.textContent = "–";
+      }
+    }
+
+    document.getElementById("fileInput").addEventListener("change", function(evt) {
+      const file = evt.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: "array" });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+        const map = {};
+        json.forEach(row => {
+          if (row[0] && row[1]) {
+            map[row[0].toLowerCase()] = row[1];
+          }
+        });
+
+        const fields = [
+          "sampleName", "fermentationVessel", "harvestDate", "extractionDate",
+          "fermentationVolume", "harvestVolume", "odHarvest",
+          "wetPasteWeight", "dryPasteWeight", "extractedPasteWeight", "finalPolymerWeight"
+        ];
+
+        fields.forEach(id => {
+          const input = document.getElementById(id);
+          if (map[id.toLowerCase()]) {
+            input.value = map[id.toLowerCase()];
+          }
+        });
+
+        calculate();
+      };
+      reader.readAsArrayBuffer(file);
+    });
+
+    function exportToExcel() {
+      const get = id => document.getElementById(id).value || "";
+      const getText = id => document.getElementById(id).textContent || "";
+
+      const rows = [
+        ["Sample name", get("sampleName")],
+        ["Fermentation vessel", get("fermentationVessel")],
+        ["Harvest date", get("harvestDate")],
+        ["Extraction date", get("extractionDate")],
+        ["Fermentation volume (L)", get("fermentationVolume")],
+        ["Harvest volume (L)", get("harvestVolume")],
+        ["OD at harvest", get("odHarvest")],
+        ["Wet paste weight (g)", get("wetPasteWeight")],
+        ["Dry paste weight (g)", get("dryPasteWeight")],
+        ["Extracted paste weight (g)", get("extractedPasteWeight")],
+        ["Final polymer weight (g)", get("finalPolymerWeight")],
+        ["Dry polymer per culture volume", getText("dryPerL")],
+        ["Normalized dry polymer per OD", getText("dryPerLOD")],
+        ["Yield from extracted paste", getText("yield")]
+      ];
+
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet(rows);
+      XLSX.utils.book_append_sheet(wb, ws, "BioYielder");
+      XLSX.writeFile(wb, "BioYielder_output.xlsx");
+    }
+  </script>
+
+</body>
+</html>
